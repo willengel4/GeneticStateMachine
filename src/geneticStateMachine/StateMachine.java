@@ -27,9 +27,16 @@ public class StateMachine
 		buildMachineFromEncoding(encoding);
 	}
 	
+	/* Executes a list of instructions (state transfers) */
 	public void execute(ArrayList<String> instructions)
 	{
-		
+		for(String i : instructions)
+		{
+			State nextState = currentState.getNextState(i);
+			String output = currentState.getOutput(i);
+			System.out.println("Next State: " + nextState.getEncoding() + " Output: " + output);
+			currentState = nextState;
+		}
 	}
 	
 	/* Builds a state machine given the encoding string */
