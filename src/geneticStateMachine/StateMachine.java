@@ -27,16 +27,21 @@ public class StateMachine
 		buildMachineFromEncoding(encoding);
 	}
 	
-	/* Executes a list of instructions (state transfers) */
-	public void execute(ArrayList<String> instructions)
+	/* Executes a list of instructions (state transfers)
+	 * Returns the outputs */
+	public ArrayList<String> execute(ArrayList<String> inputs)
 	{
-		for(String i : instructions)
+		ArrayList<String> outputs = new ArrayList<String>();
+		
+		for(String i : inputs)
 		{
 			State nextState = currentState.getNextState(i);
 			String output = currentState.getOutput(i);
-			System.out.println("Next State: " + nextState.getEncoding() + " Output: " + output);
+			outputs.add(output);
 			currentState = nextState;
 		}
+		
+		return outputs;
 	}
 	
 	/* Builds a state machine given the encoding string */
@@ -98,9 +103,7 @@ public class StateMachine
 				String inputBitCode = Helper.toBinary(f, true, Helper.log2(numInputs));
 				String nextStateBitCode = nextStates.get(instructionIndex);
 				String outputBitCode = outputs.get(instructionIndex);
-				
-				System.out.println(stateBitCode + " " + inputBitCode + " " + nextStateBitCode + " " + outputBitCode);
-				
+								
 				/* Perform the mappings */
 				states.get(stateBitCode).setNextState(inputBitCode, states.get(nextStateBitCode));
 				states.get(stateBitCode).setOutput(inputBitCode, outputBitCode);

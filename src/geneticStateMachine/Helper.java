@@ -1,4 +1,5 @@
 package geneticStateMachine;
+import java.util.Random;
 
 public class Helper 
 {
@@ -22,4 +23,6 @@ public class Helper
 	{
 		return toBinary(state, true, stateLength) + toBinary(input, true, inputLength);
 	}
+	
+	public static Random random = new Random();
 }
