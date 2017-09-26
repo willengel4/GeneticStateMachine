@@ -6,20 +6,23 @@ public class Population
 {
 	/* A list of genomes that make up the population */
 	private ArrayList<Genome> genomes;
-	private int generation;
 	private int m;
-	private Genome bestGenome;
+	private Genome populationBest;
+	private Evaluator evaluator;
 	
-	public Population(int numGenomes, int bitsPerGenome)
+	public Population(int numGenomes, Evaluator evaluator)
 	{
 		/* Initialize the genomes list */
 		genomes = new ArrayList<Genome>();
-		generation = 0;
 		m = numGenomes;
-		
+		this.evaluator = evaluator;
+	}
+	
+	public void randomizePopulation(int bitsPerGenome)
+	{
 		/* Creates the specified number of genomes, each with it's own
 		 * random configuration */
-		for(int i = 0; i < numGenomes; i++)
+		for(int i = 0; i < m; i++)
 		{
 			StringBuilder machineBuilder = new StringBuilder();
 			for(int f = 0; f < bitsPerGenome; f++)
@@ -31,40 +34,35 @@ public class Population
 	public void printPopulation()
 	{
 		for(int i = 0; i < genomes.size(); i++)
-		{
 			System.out.print(genomes.get(i).getEncoding() + " ");
-		}
 		
 		System.out.println();
 	}
 	
-	public void evaluatePopulation(int numInputs, int numOutputs, int numStates, ArrayList<String> inputs, ArrayList<String> outputs)
+	public void evaluatePopulation()
 	{
+		double fitnessSum = 0.0;
+		
 		for(Genome g : genomes)
 		{
-			double fitness = 0.0;
-			StateMachine machine = new StateMachine(numStates, numInputs, numOutputs, g.getEncoding());
-			
-			ArrayList<String> machineOutputs = machine.execute(inputs);
-			for(int i = 0; i < machineOutputs.size(); i++)
-				if(machineOutputs.get(i).equals(outputs.get(i)))
-					fitness++;
-			
-			g.setFitness(fitness);
-			if(bestGenome == null || fitness > bestGenome.getFitness())
-				bestGenome = g;
+			g.setFitness(evaluator.evaluate(g.getEncoding()));
+			fitnessSum += g.getFitness();
+			if(populationBest == null || g.compareTo(populationBest) > 0)
+				populationBest = g;
 		}
+		
+		System.out.println("avg fitness: " + (fitnessSum / (double)genomes.size()));
 	}
 	
-	public void createNextGeneration(int numInputs, int numOutputs, int numStates, ArrayList<String> inputs, ArrayList<String> outputs)
+	public Population createNextGeneration()
 	{
-		evaluatePopulation(numStates, numInputs, numOutputs, inputs, outputs);
+		evaluatePopulation();
 
 		int pCopy = 5;
 		int pCrossover = 5;
 		int pMutate = 1;
 		
-		ArrayList<Genome> nextGeneration = new ArrayList<Genome>();
+		Population nextGeneration = new Population(m, evaluator);
 		
 		for(int i = 0; i < m; i++)
 		{
@@ -72,7 +70,7 @@ public class Population
 			
 			if(lotto < pCopy)
 			{
-				nextGeneration.add(selectGenome().copy());
+				nextGeneration.addGenome(selectGenome().copy());
 			}
 			else if(lotto < pCopy + pCrossover)
 			{
@@ -88,18 +86,17 @@ public class Population
 				Genome offspring1 = new Genome(fragment1 + remainder2);
 				Genome offspring2 = new Genome(fragment2 + remainder1);
 				
-				nextGeneration.add(offspring1);
-				nextGeneration.add(offspring2);
+				nextGeneration.addGenome(offspring1);
+				nextGeneration.addGenome(offspring2);
 				i++;
 			}
 			else
 			{
-				nextGeneration.add(selectGenome().mutate());
+				nextGeneration.addGenome(selectGenome().mutate());
 			}
 		}
 		
-		genomes.clear();
-		genomes.addAll(nextGeneration);
+		return nextGeneration;
 	}
 	
 	private Genome selectGenome()
@@ -124,8 +121,13 @@ public class Population
 		return null;
 	}
 	
-	public Genome getBestGenome()
+	public Genome getPopulationBest()
 	{
-		return bestGenome;
+		return populationBest;
+	}
+	
+	public void addGenome(Genome g)
+	{
+		genomes.add(g);
 	}
 }

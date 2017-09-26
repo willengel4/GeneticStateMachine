@@ -20,14 +20,28 @@ public class Menu
 		inputs.add("1");
 		ArrayList<String> outputs = goalMachine.execute(inputs);
 		
-		Population population = new Population(150, 9);
+		MachineEvaluator evaluator = new MachineEvaluator(2, 2, 2, inputs, outputs);
 		
-		for(int i = 0; i < 300; i++)
+		Population currentPopulation = new Population(25, evaluator);
+		currentPopulation.randomizePopulation(9);
+		Genome bestGenome = null;
+		
+		for(int i = 0; i < 20; i++)
 		{
-			population.createNextGeneration(2, 2, 2, inputs, outputs);
+			/* Evaluates current generation and creates the next generation
+			 * Stores the next generation in nextGeneration */
+			Population nextGeneration = currentPopulation.createNextGeneration();
+			
+			/* If the current population's best genome performs better than
+			 * the current best genome, replace best genome with the current
+			 * population's best genome */
+			if(bestGenome == null || currentPopulation.getPopulationBest().getFitness() > bestGenome.getFitness())
+				bestGenome = currentPopulation.getPopulationBest();
+			
+			currentPopulation = nextGeneration;
 		}
 		
-		System.out.println(population.getBestGenome().getEncoding());
-		System.out.println(population.getBestGenome().getFitness());
+		System.out.println(bestGenome.getEncoding());
+		System.out.println(bestGenome.getFitness());
 	}
 }

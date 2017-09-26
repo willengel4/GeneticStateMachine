@@ -39,4 +39,9 @@ public class Genome
 	{
 		return encoding;
 	}
+	
+	public double compareTo(Genome other)
+	{
+		return fitness - other.getFitness();
+	}
 }
